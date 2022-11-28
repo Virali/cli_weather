@@ -11,10 +11,7 @@ export const printSuccess = (message: string) => {
 };
 
 export const printHelp = () => {
-  const text = "No parameters passed - weather output \n -s city assignment \n -h for help \n -t to save token";
-  console.log(
-    `${bgCyan(
-      " HELP "
-    )}\n ${text}`
-  );
+  const text =
+    "No parameters passed - weather output \n -s city assignment \n -h for help \n -t to save token";
+  console.log(`${bgCyan(" HELP ")}\n ${text}`);
 };
