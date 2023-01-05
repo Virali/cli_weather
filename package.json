@@ -8,7 +8,7 @@
   },
   "type": "commonjs",
   "scripts": {
-    "start": "tsc & cd build && node weather.js",
+    "start": "tsc && cd build && node weather.js",
     "test": "test"
   },
   "keywords": [

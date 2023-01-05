@@ -1,6 +1,8 @@
 #!/user/bin/env node
 
 import { getArgs } from "./helpers/args";
+import { TOKEN_DICTIONARY } from "./helpers/constants";
+import { getWeather } from "./services/api.service";
 import { printError, printHelp, printSuccess } from "./services/log.service";
 import { saveKeyValue } from "./services/storage.service";
 
@@ -29,6 +31,23 @@ async function tryCatchLog(
   }
 }
 
+async function getForecast() {
+  try {
+    const weather = await getWeather("saint petersburg");
+    console.log(weather);
+  } catch (error: any) {
+    if (error?.response?.status == 404) {
+      printError("Wrong city name");
+      return;
+    }
+    if (error?.response?.status == 401) {
+      printError("Wrong token");
+      return;
+    }
+    printError(error.message);
+  }
+}
+
 const initCLI = () => {
   const args = getArgs(process.argv);
 
@@ -44,10 +63,11 @@ const initCLI = () => {
       return;
     }
     tryCatchLog({
-      callback: () => saveKeyValue("token", args.t),
+      callback: () => saveKeyValue(TOKEN_DICTIONARY.TOKEN, args.t),
       message: "Token is saved",
     });
   }
+  getForecast();
 };
 
 initCLI();

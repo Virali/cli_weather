@@ -19,14 +19,12 @@ export const saveKeyValue = async (key: string, value: any) => {
   );
 };
 
-export const getKeyValue = async (key: string) => {
+export const getKeyValue = async (key: string): Promise<string> => {
   const origFile = await readFile(filePath);
 
   if (origFile) {
     return JSON.parse(origFile.toString())[key];
-  }
-
-  return undefined;
+  } else throw new Error("No file");
 };
 
 async function readFile(path: string) {
