@@ -11,18 +11,23 @@ export const getWeather = async (city: string): Promise<string> => {
   url.searchParams.append("lang", "en");
 
   return new Promise((resolve, reject) => {
-    https.get(url, (response) => {
-      let result = "";
+    https
+      .get(url, (response) => {
+        let result = "";
 
-      response.on("data", (chunk) => {
-        result += chunk;
+        response.on("data", (chunk) => {
+          result += chunk;
+        });
+
+        response.on("end", () => {
+          if (response.statusCode && (response.statusCode < 200 || response.statusCode > 299)) {
+            reject(JSON.parse(result))
+          }
+          resolve(JSON.parse(result));
+        });
+      })
+      .on("error", (error) => {
+        reject(error);
       });
-
-      response.on("end", () => {
-        resolve(JSON.parse(result));
-      });
-
-      response.on("error", (error) => reject(error));
-    });
   });
 };

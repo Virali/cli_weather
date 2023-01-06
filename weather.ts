@@ -3,8 +3,8 @@
 import { getArgs } from "./helpers/args";
 import { TOKEN_DICTIONARY } from "./helpers/constants";
 import { getWeather } from "./services/api.service";
-import { printError, printHelp, printSuccess } from "./services/log.service";
-import { saveKeyValue } from "./services/storage.service";
+import { printError, printHelp, printInfo, printSuccess } from "./services/log.service";
+import { getKeyValue, saveKeyValue } from "./services/storage.service";
 
 type FuncOfAny = (...args: any) => any;
 
@@ -33,14 +33,17 @@ async function tryCatchLog(
 
 async function getForecast() {
   try {
-    const weather = await getWeather("saint petersburg");
-    console.log(weather);
+    const cityValue = await getKeyValue(TOKEN_DICTIONARY.CITY);
+    if (cityValue) {
+      const weather = await getWeather(cityValue);
+      console.log(weather);
+    }
   } catch (error: any) {
-    if (error?.response?.status == 404) {
+    if (error?.cod == 404) {
       printError("Wrong city name");
       return;
     }
-    if (error?.response?.status == 401) {
+    if (error?.cod == 401) {
       printError("Wrong token");
       return;
     }
@@ -48,24 +51,38 @@ async function getForecast() {
   }
 }
 
-const initCLI = () => {
+const initCLI = async () => {
   const args = getArgs(process.argv);
 
   if (args.h) {
     printHelp();
+    return;
   }
   if (args.s) {
-    //printSuccess();
+    if (typeof args.s === "boolean") {
+      const cityValue = await getKeyValue(TOKEN_DICTIONARY.CITY);
+      printInfo('City:', cityValue)
+      return;
+    }
+    getWeather(args.s).then(() =>
+      tryCatchLog({
+        callback: () => saveKeyValue(TOKEN_DICTIONARY.CITY, args.s),
+        message: "City is saved",
+      })
+    );
+    return;
   }
   if (args.t) {
-    if (typeof args.t !== "string") {
-      printError("Token value is not provided");
+    if (typeof args.t === "boolean") {
+      const tokenValue = await getKeyValue(TOKEN_DICTIONARY.TOKEN);
+      printInfo('Token:', tokenValue)
       return;
     }
     tryCatchLog({
       callback: () => saveKeyValue(TOKEN_DICTIONARY.TOKEN, args.t),
       message: "Token is saved",
     });
+    return;
   }
   getForecast();
 };
